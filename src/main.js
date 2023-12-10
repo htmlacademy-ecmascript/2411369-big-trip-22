@@ -9,7 +9,7 @@ const infoTripElement = headerElement.querySelector('.trip-main');
 const mainElement = document.querySelector('.page-main');
 const eventsTripElement = mainElement.querySelector('.trip-events');
 
-const boardPresenter = new BoardPresenter({boardPresenter: eventsTripElement});
+const boardPresenter = new BoardPresenter({container: eventsTripElement});
 
 render(new InfoTripView(), infoTripElement, 'afterbegin');
 render(new FilterView(), filterElement);
