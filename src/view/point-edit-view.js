@@ -1,7 +1,7 @@
-import { destinations, offersByType } from '../mock/point';
-import { createElement } from '../render';
-import { POINT_TYPES } from '../const';
 import dayjs from 'dayjs';
+import AbstractView from '../framework/view/abstract-view';
+import { destinations, offersByType } from '../mock/point';
+import { POINT_TYPES } from '../const';
 
 const DATE_FORMAT = 'DD/MM/YY HH:mm';
 
@@ -105,24 +105,34 @@ const createPointEditTemplate = (point) => {
   </li>`;
 };
 
-export default class PointEditView {
-  constructor(point) {
-    this.point = point;
+export default class PointEditView extends AbstractView {
+  #point = null;
+  #handlerFormSubmit = null;
+  #handlerRollupButtonClick = null;
+
+  constructor({ point, onFormSubmit, onRollupButtonClick }) {
+    super();
+    this.#point = point;
+    this.#handlerFormSubmit = onFormSubmit;
+    this.#handlerRollupButtonClick = onRollupButtonClick;
+
+    this.element.querySelector('form')
+      .addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#rollupButtonClickHandler);
   }
 
-  getTemplate() {
-    return createPointEditTemplate(this.point);
+  get template() {
+    return createPointEditTemplate(this.#point);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this.#handlerFormSubmit();
+  };
 
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #rollupButtonClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handlerRollupButtonClick();
+  };
 }

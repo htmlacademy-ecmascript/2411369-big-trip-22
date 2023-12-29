@@ -2,7 +2,9 @@ import FilterView from './view/filter-view.js';
 import InfoTripView from './view/info-trip-view.js';
 import BoardPresenter from './presenter/board-presenter.js';
 import PointsModel from './model/points-model.js';
-import { render } from './render';
+import SortView from './view/sort-view.js';
+import { render } from './framework/render.js';
+
 
 const headerElement = document.querySelector('.page-header');
 const filterElement = headerElement.querySelector('.trip-controls__filters');
@@ -18,5 +20,7 @@ const boardPresenter = new BoardPresenter({
 
 render(new InfoTripView(), infoTripElement, 'afterbegin');
 render(new FilterView(), filterElement);
+render(new SortView(), eventsTripElement);
+
 
 boardPresenter.init();
