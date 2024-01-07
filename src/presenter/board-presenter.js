@@ -1,14 +1,15 @@
-import ListView from '../view/list-view.js';
+import PointListView from '../view/point-list-view.js';
 import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
-import { render, replace } from '../framework/render.js';
 import PointListMessageView from '../view/point-list-empty-message-view.js';
+import { isEscapeKey } from '../utils/point.js';
+import { render, replace } from '../framework/render.js';
 
 export default class BoardPresenter {
   #boardContainer = null;
   #pointsModel = null;
 
-  #pointListComponent = new ListView();
+  #pointListComponent = new PointListView();
 
   #boardPoints = [];
 
@@ -29,13 +30,11 @@ export default class BoardPresenter {
     } else {
       render(new PointListMessageView(), this.#pointListComponent.element);
     }
-    // render(this.#sortComponent, this.#boardContainer, 'afterbegin');
-    // render(new PointEditView(getRandomArrayElement(this.#boardPoints)), this.#pointListComponent.element, 'afterbegin');
   }
 
   #renderPoint(point) {
     const escKeyDownHandler = (evt) => {
-      if (evt.key === 'Escape') {
+      if (isEscapeKey) {
         evt.preventDefault();
         replaceFormToPoint.call(this);
         document.removeEventListener('keydown', escKeyDownHandler);
@@ -45,7 +44,7 @@ export default class BoardPresenter {
     const pointComponent = new PointView({
       point,
       onRollupButtonClick: () => {
-        replacePointToForm.call(this);
+        replacePointToForm(this);
         document.addEventListener('keydown', escKeyDownHandler);
       }
     });
@@ -53,11 +52,11 @@ export default class BoardPresenter {
     const pointEditComponent = new PointEditView({
       point,
       onFormSubmit: () => {
-        replaceFormToPoint.call(this);
+        replaceFormToPoint(this);
         document.addEventListener('keydown', escKeyDownHandler);
       },
       onRollupButtonClick: () => {
-        replaceFormToPoint.call(this);
+        replaceFormToPoint(this);
         document.removeEventListener('keydown', escKeyDownHandler);
       }
     });
