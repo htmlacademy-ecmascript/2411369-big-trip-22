@@ -1,4 +1,6 @@
 import dayjs from 'dayjs';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import { destinations, offersByType } from '../mock/point';
 import { POINT_TYPES } from '../const';
@@ -118,6 +120,8 @@ const createPointEditTemplate = (point) => {
 export default class PointEditView extends AbstractStatefulView {
   #handlerFormSubmit = null;
   #handlerRollupButtonClick = null;
+  #datepickerFrom = null;
+  #datepickerTo = null;
 
   constructor({ point, onFormSubmit, onRollupButtonClick }) {
     super();
@@ -130,6 +134,20 @@ export default class PointEditView extends AbstractStatefulView {
 
   get template() {
     return createPointEditTemplate(this._state);
+  }
+
+  removeElement() {
+    super.removeElement();
+
+    if (this.#datepickerFrom) {
+      this.#datepickerFrom.destroy();
+      this.#datepickerFrom = null;
+    }
+
+    if (this.#datepickerTo) {
+      this.#datepickerTo.destroy();
+      this.#datepickerTo = null;
+    }
   }
 
   static parsePointToState = (point) => ({ ...point });
@@ -153,6 +171,8 @@ export default class PointEditView extends AbstractStatefulView {
       .addEventListener('input', this.#priceInputHandler);
     this.element.querySelectorAll('event__offer-selector input')
       .forEach((offer) => offer.addEventListener('change', this.#offersChangeHandler));
+
+    this.#setDatepicker();
   }
 
   #eventTypeToggleHandler = (evt) => {
@@ -196,6 +216,18 @@ export default class PointEditView extends AbstractStatefulView {
     });
   };
 
+  #dateFromChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateFrom: userDate
+    });
+  };
+
+  #dateToChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateTo: userDate
+    });
+  };
+
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
     this.#handlerFormSubmit(PointEditView.parseStateToPoint(this._state));
@@ -205,4 +237,35 @@ export default class PointEditView extends AbstractStatefulView {
     evt.preventDefault();
     this.#handlerRollupButtonClick();
   };
+
+  #setDatepicker() {
+    const [dateFromElement, dateToElement] = this.element.querySelectorAll('.event__input--time');
+
+    const commonConfig = {
+      dateFormat: 'd/m/y H:i',
+      enableTime: true,
+      locale: {firstDayOfWeek: 1},
+      'time_24hr': true
+    };
+
+    this.#datepickerFrom = flatpickr(
+      dateFromElement,
+      {
+        ...commonConfig,
+        defaultDate: this._state.dateFrom,
+        onClose: this.#dateFromChangeHandler,
+        maxDate: this._state.dateTo
+      }
+    );
+
+    this.#datepickerTo = flatpickr(
+      dateToElement,
+      {
+        ...commonConfig,
+        defaultDate: this._state.dateTo,
+        onClose: this.#dateToChangeHandler,
+        minDate: this._state.dateFrom
+      }
+    );
+  }
 }
