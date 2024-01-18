@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import AbstractView from '../framework/view/abstract-view';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import { destinations, offersByType } from '../mock/point';
 import { POINT_TYPES } from '../const';
 
@@ -15,8 +15,8 @@ const createPointEditTemplate = (point) => {
   if (pointTypeOffer) {
     offersTemplate = pointTypeOffer.offers
       .map((offer) => `<div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title}-1" type="checkbox" name="event-offer-${offer.title}" ${offers.includes(offer.id) ? 'checked' : ''}>
-            <label class="event__offer-label" for="event-offer-${offer.title}-1">
+            <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title}-${offer.id}" type="checkbox" name="${offer.title}" data-offer-id="${offer.id}" ${offers.includes(offer.id) ? 'checked' : ''}>
+            <label class="event__offer-label" for="event-offer-${offer.title}-${offer.id}">
               <span class="event__offer-title">${offer.title}</span>
               &plus;&euro;&nbsp;
               <span class="event__offer-price">${offer.price}</span>
@@ -24,7 +24,14 @@ const createPointEditTemplate = (point) => {
           </div>`).join('');
   }
 
-  const eventType = POINT_TYPES.map((group) =>
+  let picturesTemplate = '';
+  if (pointDestination.pictures) {
+    picturesTemplate = pointDestination.pictures.map((picture) => `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`).join('');
+  }
+
+  const destinationNameTemplate = destinations.map((element) => `<option value="${element.name}"></option>`).join('');
+
+  const eventTypeTemplate = POINT_TYPES.map((group) =>
     `<div class="event__type-item">
       <input id="event-type-${group}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${group}" ${group === type ? 'checked' : ''}>
       <label class="event__type-label  event__type-label--${group}" for="event-type-${group}-1">${group.charAt(0).toUpperCase() + group.slice(1)}</label>
@@ -48,7 +55,7 @@ const createPointEditTemplate = (point) => {
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Event type</legend>
 
-              ${eventType}
+              ${eventTypeTemplate}
             </fieldset>
           </div>
         </div>
@@ -57,11 +64,9 @@ const createPointEditTemplate = (point) => {
           <label class="event__label  event__type-output" for="event-destination-1">
             ${type}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="Chamonix" list="destination-list-1">
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${pointDestination.name}" list="destination-list-1">
           <datalist id="destination-list-1">
-            <option value="Amsterdam"></option>
-            <option value="Geneva"></option>
-            <option value="Chamonix"></option>
+            ${destinationNameTemplate};
           </datalist>
         </div>
 
@@ -78,7 +83,7 @@ const createPointEditTemplate = (point) => {
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+          <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}">
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -99,36 +104,101 @@ const createPointEditTemplate = (point) => {
         <section class="event__section  event__section--destination">
           <h3 class="event__section-title  event__section-title--destination">Destination</h3>
           <p class="event__destination-description">${pointDestination.description}</p>
+          <div class="event__photos-container">
+            <div class="event__photos-tape">
+            ${picturesTemplate}
+            </div>
+          </div>
         </section>
       </section>
     </form>
   </li>`;
 };
 
-export default class PointEditView extends AbstractView {
-  #point = null;
+export default class PointEditView extends AbstractStatefulView {
   #handlerFormSubmit = null;
   #handlerRollupButtonClick = null;
 
   constructor({ point, onFormSubmit, onRollupButtonClick }) {
     super();
-    this.#point = point;
+    this._setState(PointEditView.parsePointToState(point));
     this.#handlerFormSubmit = onFormSubmit;
     this.#handlerRollupButtonClick = onRollupButtonClick;
 
+    this._restoreHandlers();
+  }
+
+  get template() {
+    return createPointEditTemplate(this._state);
+  }
+
+  static parsePointToState = (point) => ({ ...point });
+
+  static parseStateToPoint = (state) => ({ ...state });
+
+  reset(point) {
+    this.updateElement(PointEditView.parsePointToState(point));
+  }
+
+  _restoreHandlers() {
     this.element.querySelector('form')
       .addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__rollup-btn')
       .addEventListener('click', this.#rollupButtonClickHandler);
+    this.element.querySelector('.event__type-group')
+      .addEventListener('change', this.#eventTypeToggleHandler);
+    this.element.querySelector('.event__input--destination')
+      .addEventListener('click', this.#eventDestinationToggleHandler);
+    this.element.querySelector('.event__input--price')
+      .addEventListener('input', this.#priceInputHandler);
+    this.element.querySelectorAll('event__offer-selector input')
+      .forEach((offer) => offer.addEventListener('change', this.#offersChangeHandler));
   }
 
-  get template() {
-    return createPointEditTemplate(this.#point);
-  }
+  #eventTypeToggleHandler = (evt) => {
+    evt.preventDefault();
+    this.updateElement({
+      type: evt.target.value,
+      offer: []
+    });
+  };
+
+  #eventDestinationToggleHandler = (evt) => {
+    evt.preventDefault();
+
+    const selectedDestination = destinations.find((destination) => evt.target.value === destination.name);
+    this.updateElement({
+      destination: selectedDestination.id
+    });
+  };
+
+  #priceInputHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({
+      basePrice: evt.target.value
+    });
+  };
+
+  #offersChangeHandler = (evt) => {
+    evt.preventDefault();
+    evt.target.toggleAttribute('checked');
+
+    let selectedOffers = this._state.offers;
+
+    if (evt.target.hasAttribute('checked')) {
+      selectedOffers.push(+(evt.target.dataset.offerId));
+    } else {
+      selectedOffers = selectedOffers.filter((id) => id !== +(evt.target.dataset.offerId));
+    }
+
+    this._setState({
+      offers: selectedOffers
+    });
+  };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handlerFormSubmit();
+    this.#handlerFormSubmit(PointEditView.parseStateToPoint(this._state));
   };
 
   #rollupButtonClickHandler = (evt) => {
