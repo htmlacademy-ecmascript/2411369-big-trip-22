@@ -2,25 +2,30 @@ import PointPresenter from './point-presenter.js';
 import PointListView from '../view/point-list-view.js';
 import PointListMessageView from '../view/point-list-empty-message-view.js';
 import SortView from '../view/sort-view.js';
+import FilterView from '../view/filter-view.js';
 import { render } from '../framework/render.js';
 import { updateItem } from '../utils/common.js';
 import { SORT_TYPE } from '../const.js';
 import { sortByDay, sortByTime, sortByPrice } from '../utils/point.js';
+import { generateFilter } from '../mock/filter.js';
 
 export default class BoardPresenter {
   #boardContainer = null;
+  #filtersContainer = null;
   #pointsModel = null;
 
   #pointListComponent = new PointListView();
   #sortComponent = null;
+  #filtersComponent = null;
   #listMessageComponent = new PointListMessageView();
 
   #boardPoints = [];
   #pointPresenters = new Map();
   #currentSortType = SORT_TYPE.DAY;
 
-  constructor({ boardContainer, pointsModel }) {
+  constructor({ boardContainer, filtersContainer, pointsModel }) {
     this.#boardContainer = boardContainer;
+    this.#filtersContainer = filtersContainer;
     this.#pointsModel = pointsModel;
   }
 
@@ -83,6 +88,13 @@ export default class BoardPresenter {
     render(this.#sortComponent, this.#boardContainer, 'afterbegin');
   }
 
+  #renderFilters() {
+    const filters = generateFilter(this.#boardPoints);
+    this.#filtersComponent = new FilterView({ filters });
+
+    render(this.#filtersComponent, this.#filtersContainer);
+  }
+
   #renderListMessage() {
     render(this.#listMessageComponent, this.#pointListComponent.element);
   }
@@ -107,6 +119,7 @@ export default class BoardPresenter {
 
   #renderBoard() {
     this.#renderSort();
+    this.#renderFilters();
     this.#renderList();
   }
 }
