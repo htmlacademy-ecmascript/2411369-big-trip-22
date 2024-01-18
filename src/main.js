@@ -1,6 +1,9 @@
 import PointsModel from './model/points-model.js';
 import BoardPresenter from './presenter/board-presenter.js';
 import TripInfoPresenter from './presenter/trip-info-presenter.js';
+import FilterView from './view/filter-view.js';
+import { render } from './framework/render.js';
+import { generateFilter } from './mock/filter.js';
 
 
 const headerElement = document.querySelector('.page-header');
@@ -12,13 +15,16 @@ const eventsTripElement = mainElement.querySelector('.trip-events');
 const pointsModel = new PointsModel();
 const boardPresenter = new BoardPresenter({
   boardContainer: eventsTripElement,
-  filtersContainer: filterElement,
   pointsModel,
 });
 const tripInfoPresenter = new TripInfoPresenter({
   tripInfoContainer: infoTripElement,
   pointsModel
 });
+const filters = generateFilter(pointsModel.points);
+
+render(new FilterView({ filters }), filterElement);
+
 
 boardPresenter.init();
 tripInfoPresenter.init();
