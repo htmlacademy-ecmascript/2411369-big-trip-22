@@ -1,4 +1,6 @@
 import dayjs from 'dayjs';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import { destinations, offersByType } from '../mock/point';
 import { POINT_TYPES } from '../const';
@@ -116,20 +118,36 @@ const createPointEditTemplate = (point) => {
 };
 
 export default class PointEditView extends AbstractStatefulView {
-  #handlerFormSubmit = null;
-  #handlerRollupButtonClick = null;
+  #handleFormSubmit = null;
+  #handleRollupButtonClick = null;
+  #datepickerFrom = null;
+  #datepickerTo = null;
 
   constructor({ point, onFormSubmit, onRollupButtonClick }) {
     super();
     this._setState(PointEditView.parsePointToState(point));
-    this.#handlerFormSubmit = onFormSubmit;
-    this.#handlerRollupButtonClick = onRollupButtonClick;
+    this.#handleFormSubmit = onFormSubmit;
+    this.#handleRollupButtonClick = onRollupButtonClick;
 
     this._restoreHandlers();
   }
 
   get template() {
     return createPointEditTemplate(this._state);
+  }
+
+  removeElement() {
+    super.removeElement();
+
+    if (this.#datepickerFrom) {
+      this.#datepickerFrom.destroy();
+      this.#datepickerFrom = null;
+    }
+
+    if (this.#datepickerTo) {
+      this.#datepickerTo.destroy();
+      this.#datepickerTo = null;
+    }
   }
 
   static parsePointToState = (point) => ({ ...point });
@@ -148,18 +166,21 @@ export default class PointEditView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group')
       .addEventListener('change', this.#eventTypeToggleHandler);
     this.element.querySelector('.event__input--destination')
-      .addEventListener('click', this.#eventDestinationToggleHandler);
+      .addEventListener('change', this.#eventDestinationToggleHandler);
     this.element.querySelector('.event__input--price')
       .addEventListener('input', this.#priceInputHandler);
-    this.element.querySelectorAll('event__offer-selector input')
+    this.element.querySelectorAll('.event__offer-selector input')
       .forEach((offer) => offer.addEventListener('change', this.#offersChangeHandler));
+
+    this.#setDatepicker();
   }
 
   #eventTypeToggleHandler = (evt) => {
     evt.preventDefault();
+
     this.updateElement({
       type: evt.target.value,
-      offer: []
+      offers: []
     });
   };
 
@@ -167,6 +188,7 @@ export default class PointEditView extends AbstractStatefulView {
     evt.preventDefault();
 
     const selectedDestination = destinations.find((destination) => evt.target.value === destination.name);
+
     this.updateElement({
       destination: selectedDestination.id
     });
@@ -174,10 +196,28 @@ export default class PointEditView extends AbstractStatefulView {
 
   #priceInputHandler = (evt) => {
     evt.preventDefault();
+
     this._setState({
       basePrice: evt.target.value
     });
   };
+
+  // #offersChangeHandler = (evt) => {
+  //   evt.preventDefault();
+  //   evt.target.toggleAttribute('checked');
+
+  //   let selectedOffers = this._state.offers;
+
+  //   if (evt.target.hasAttribute('checked')) {
+  //     selectedOffers.push(+(evt.target.dataset.offerId));
+  //   } else {
+  //     selectedOffers = selectedOffers.filter((id) => id !== +(evt.target.dataset.offerId));
+  //   }
+
+  //   this._setState({
+  //     offers: selectedOffers
+  //   });
+  // };
 
   #offersChangeHandler = (evt) => {
     evt.preventDefault();
@@ -196,13 +236,58 @@ export default class PointEditView extends AbstractStatefulView {
     });
   };
 
+  #dateFromChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateFrom: userDate
+    });
+  };
+
+  #dateToChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateTo: userDate
+    });
+  };
+
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handlerFormSubmit(PointEditView.parseStateToPoint(this._state));
+
+    this.#handleFormSubmit(PointEditView.parseStateToPoint(this._state));
   };
 
   #rollupButtonClickHandler = (evt) => {
     evt.preventDefault();
-    this.#handlerRollupButtonClick();
+
+    this.#handleRollupButtonClick();
   };
+
+  #setDatepicker() {
+    const [dateFromElement, dateToElement] = this.element.querySelectorAll('.event__input--time');
+
+    const commonConfig = {
+      dateFormat: 'd/m/y H:i',
+      enableTime: true,
+      locale: {firstDayOfWeek: 1},
+      'time_24hr': true
+    };
+
+    this.#datepickerFrom = flatpickr(
+      dateFromElement,
+      {
+        ...commonConfig,
+        defaultDate: this._state.dateFrom,
+        onClose: this.#dateFromChangeHandler,
+        maxDate: this._state.dateTo
+      }
+    );
+
+    this.#datepickerTo = flatpickr(
+      dateToElement,
+      {
+        ...commonConfig,
+        defaultDate: this._state.dateTo,
+        onClose: this.#dateToChangeHandler,
+        minDate: this._state.dateFrom
+      }
+    );
+  }
 }
