@@ -10,17 +10,29 @@ const POINT_TYPES = [
   'restaurant'
 ];
 
-const FILTER_TYPE = {
+const FilterType = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
   PRESENT: 'present',
   PAST: 'past'
 };
 
-const SORT_TYPE = {
+const SortType = {
   DAY: 'day',
   TIME: 'time',
   PRICE: 'price'
 };
 
-export { POINT_TYPES, FILTER_TYPE, SORT_TYPE };
+const UserAction = {
+  UPDATE_POINT: 'UPDATE_POINT',
+  ADD_POINT: 'ADD_POINT',
+  DELETE_POINT: 'DELETE_POINT'
+};
+
+const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR'
+};
+
+export { POINT_TYPES, FilterType, SortType, UserAction, UpdateType };
