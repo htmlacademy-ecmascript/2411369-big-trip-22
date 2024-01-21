@@ -7,6 +7,12 @@ const getRandomInteger = (min, max) => {
 
 const getRandomArrayElement = (elements) => elements[getRandomInteger(0, elements.length - 1)];
 
-const updateItem = (items, update) => items.map((item) => item.id === update.id ? update : item);
+const ucFirst = (str) => {
+  if (!str) {
+    return str;
+  }
 
-export { getRandomInteger, getRandomArrayElement, updateItem };
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+export { getRandomInteger, getRandomArrayElement, ucFirst };

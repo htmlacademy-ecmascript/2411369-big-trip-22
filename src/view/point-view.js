@@ -1,20 +1,19 @@
 import dayjs from 'dayjs';
 import Duration from 'dayjs/plugin/duration';
 import AbstractView from '../framework/view/abstract-view.js';
-import { offersByType, destinations } from '../mock/point.js';
 
-const DATE_FORMAT = 'DD MMM';
+const DATE_FORMAT = 'MMM DD';
 const TIME_FORMAT = 'HH:mm';
 const MILLISECONDS_AMOUNT_IN_HOUR = 3600000;
 const MILLISECONDS_AMOUNT_IN_DAY = 86400000;
 
 dayjs.extend(Duration);
 
-const createPointTemplate = (point) => {
+const createPointTemplate = (point, offersByType, destinations) => {
   const { type, dateFrom, dateTo, basePrice, destination, offers, isFavorite } = point;
 
   const pointTypeOffer = offersByType.find((offer) => offer.type === type);
-  const pointDestination = destinations.find((target) => destination === target.id);
+  const pointDestination = destinations.find((appointment) => destination === appointment.id);
 
   let offersTemplate = '';
   if (pointTypeOffer) {
@@ -57,14 +56,14 @@ const createPointTemplate = (point) => {
           &mdash;
           <time class="event__end-time" datetime="${dateTo}">${parsDateTo.format(TIME_FORMAT)}</time>
         </p>
-        <p class="event__duration">${getEventDuration(parsDateFrom, parsDateTo)}</p>
-      </div>
+        <p class="event__duration">${getEventDuration(parsDateFrom, parsDateTo)}</p >
+      </div >
       <p class="event__price">
         &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
       </p>
       <h4 class="visually-hidden">Offers:</h4>
       <ul class="event__selected-offers">
-        ${offersTemplate}
+      ${offersTemplate}
       </ul>
       <button class="event__favorite-btn ${isFavorite ? 'event__favorite-btn--active' : ''}" type="button">
         <span class="visually-hidden">Add to favorite</span>
@@ -75,19 +74,25 @@ const createPointTemplate = (point) => {
       <button class="event__rollup-btn" type="button">
         <span class="visually-hidden">Open event</span>
       </button>
-    </div>
+    </div >
   </li>`;
 };
 
 export default class PointView extends AbstractView {
   #point = null;
-  #handlerRollupButtonClick = null;
+  #offersByType = null;
+  #destinations = null;
+
+  #handleRollupButtonClick = null;
   #handleFavoriteClick = null;
 
-  constructor({ point, onRollupButtonClick, onFavoriteClick }) {
+  constructor({ point, offersByType, destinations, onRollupButtonClick, onFavoriteClick }) {
     super();
     this.#point = point;
-    this.#handlerRollupButtonClick = onRollupButtonClick;
+    this.#offersByType = offersByType;
+    this.#destinations = destinations;
+
+    this.#handleRollupButtonClick = onRollupButtonClick;
     this.#handleFavoriteClick = onFavoriteClick;
 
     this.element.querySelector('.event__rollup-btn')
@@ -97,12 +102,12 @@ export default class PointView extends AbstractView {
   }
 
   get template() {
-    return createPointTemplate(this.#point);
+    return createPointTemplate(this.#point, this.#offersByType, this.#destinations);
   }
 
   #rollupButtonClickHandler = (evt) => {
     evt.preventDefault();
-    this.#handlerRollupButtonClick();
+    this.#handleRollupButtonClick();
   };
 
   #favoriteClickHandler = (evt) => {
