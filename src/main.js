@@ -4,8 +4,6 @@ import TripInfoPresenter from './presenter/trip-info-presenter.js';
 import FilterModel from './model/filter-model.js';
 import NewPointButtonView from './view/new-point-button-view.js';
 import FilterPresenter from './presenter/filter-presenter.js';
-import OffersByTypeModel from './model/offers-model.js';
-import DestinationsModel from './model/destinations-model.js';
 import PointsApiService from './points-api-service.js';
 import { render } from './framework/render.js';
 
@@ -20,8 +18,6 @@ const eventsTripElement = boardElement.querySelector('.trip-events');
 const pointsModel = new PointsModel({
   pointsApiService: new PointsApiService(END_POINT, AUTHORIZATION)
 });
-const offersByTypeModel = new OffersByTypeModel();
-const destinationsModel = new DestinationsModel();
 const filterModel = new FilterModel();
 
 const newPointButtonComponent = new NewPointButtonView({
@@ -31,8 +27,6 @@ const newPointButtonComponent = new NewPointButtonView({
 const boardPresenter = new BoardPresenter({
   listContainer: eventsTripElement,
   pointsModel,
-  offersByTypeModel,
-  destinationsModel,
   filterModel,
   onNewPointDestroy: handleNewPointButtonClose
 });
@@ -45,9 +39,7 @@ const filterPresenter = new FilterPresenter({
 
 const tripInfoPresenter = new TripInfoPresenter({
   tripInfoContainer: tripElement,
-  pointsModel,
-  offersByTypeModel,
-  destinationsModel
+  pointsModel
 });
 
 function handleNewPointButtonClick() {
@@ -64,3 +56,4 @@ render(newPointButtonComponent, tripElement);
 tripInfoPresenter.init();
 filterPresenter.init();
 boardPresenter.init();
+pointsModel.init();

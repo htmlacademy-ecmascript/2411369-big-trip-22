@@ -11,8 +11,6 @@ import { filter } from '../utils/filter.js';
 export default class BoardPresenter {
   #listContainer = null;
   #pointsModel = null;
-  #offersByTypeModel = null;
-  #destinationsModel = null;
   #filterModel = null;
 
   #listComponent = new PointListView();
@@ -23,16 +21,14 @@ export default class BoardPresenter {
   #newPointPresenter = null;
   #currentSortType = SortType.DAY;
 
-  constructor({ listContainer, pointsModel, offersByTypeModel, destinationsModel, filterModel, onNewPointDestroy }) {
+  constructor({ listContainer, pointsModel, filterModel, onNewPointDestroy }) {
     this.#listContainer = listContainer;
     this.#pointsModel = pointsModel;
-    this.#offersByTypeModel = offersByTypeModel;
-    this.#destinationsModel = destinationsModel;
     this.#filterModel = filterModel;
 
     this.#newPointPresenter = new NewPointPresenter({
-      offersByTypeModel: this.#offersByTypeModel,
-      destinationsModel: this.#destinationsModel,
+      offers: this.#pointsModel.offers,
+      destinations: this.#pointsModel.destinations,
       pointListContainer: this.#listComponent.element,
       onDataChange: this.#handleViewAction,
       onDestroy: onNewPointDestroy
@@ -69,8 +65,8 @@ export default class BoardPresenter {
 
   #renderPoint(point) {
     const pointPresenter = new PointPresenter({
-      offersByTypeModel: this.#offersByTypeModel,
-      destinationsModel: this.#destinationsModel,
+      offersByTypeModel: this.#pointsModel.offers,
+      destinationsModel: this.#pointsModel.destinations,
       pointListContainer: this.#listComponent.element,
       onDataChange: this.#handleViewAction,
       onModeChange: this.#handleModeChange

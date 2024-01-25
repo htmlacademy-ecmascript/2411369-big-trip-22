@@ -1,24 +1,47 @@
 import { nanoid } from 'nanoid';
 import Observable from '../framework/observable.js';
-import { createMockPoints } from '../mock/point.js';
-
-const POINTS_COUNT = 5;
 
 export default class PointsModel extends Observable {
   #pointsApiService = null;
-  #points = createMockPoints(POINTS_COUNT);
+  #points = [];
+  #offers = [];
+  #destinations = [];
 
   constructor({ pointsApiService }) {
     super();
-    this.#pointsApiService = pointsApiService;
 
-    this.#pointsApiService.points.then((points) => {
-      console.log(points.map(this.#adaptToClient));
-    });
+    this.#pointsApiService = pointsApiService;
   }
 
   get points() {
     return this.#points;
+  }
+
+  get offers() {
+    return this.#offers;
+  }
+
+  get destinations() {
+    return this.#destinations;
+  }
+
+  async init() {
+    try {
+      const points = await this.#pointsApiService.points;
+      const offers = await this.#pointsApiService.offers;
+      const destinations = await this.#pointsApiService.destinations;
+
+      this.#points = points.map(this.#adaptToClient);
+      this.#offers = offers;
+      this.#destinations = destinations;
+      console.log(this.#points);
+      console.log(this.#offers);
+      console.log(this.#destinations);
+    } catch(err) {
+      this.#points = [];
+      this.#offers = [];
+      this.#destinations = [];
+    }
   }
 
   updatePoint(updateType, update) {
