@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import Observable from '../framework/observable.js';
+import { UpdateType } from '../const.js';
 
 export default class PointsModel extends Observable {
   #pointsApiService = null;
@@ -34,14 +35,13 @@ export default class PointsModel extends Observable {
       this.#points = points.map(this.#adaptToClient);
       this.#offers = offers;
       this.#destinations = destinations;
-      console.log(this.#points);
-      console.log(this.#offers);
-      console.log(this.#destinations);
     } catch(err) {
       this.#points = [];
       this.#offers = [];
       this.#destinations = [];
     }
+
+    this._notify(UpdateType.INIT);
   }
 
   updatePoint(updateType, update) {
