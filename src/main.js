@@ -6,14 +6,20 @@ import NewPointButtonView from './view/new-point-button-view.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 import OffersByTypeModel from './model/offers-model.js';
 import DestinationsModel from './model/destinations-model.js';
+import PointsApiService from './points-api-service.js';
 import { render } from './framework/render.js';
+
+const AUTHORIZATION = 'Basic gJ39ArvNy7EAu2';
+const END_POINT = 'https://21.objects.pages.academy/big-trip';
 
 const tripElement = document.querySelector('.trip-main');
 const tripInfoElement = tripElement.querySelector('.trip-controls__filters');
 const boardElement = document.querySelector('.page-main');
 const eventsTripElement = boardElement.querySelector('.trip-events');
 
-const pointsModel = new PointsModel();
+const pointsModel = new PointsModel({
+  pointsApiService: new PointsApiService(END_POINT, AUTHORIZATION)
+});
 const offersByTypeModel = new OffersByTypeModel();
 const destinationsModel = new DestinationsModel();
 const filterModel = new FilterModel();

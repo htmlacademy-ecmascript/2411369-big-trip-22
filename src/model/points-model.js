@@ -5,7 +5,17 @@ import { createMockPoints } from '../mock/point.js';
 const POINTS_COUNT = 5;
 
 export default class PointsModel extends Observable {
+  #pointsApiService = null;
   #points = createMockPoints(POINTS_COUNT);
+
+  constructor({ pointsApiService }) {
+    super();
+    this.#pointsApiService = pointsApiService;
+
+    this.#pointsApiService.points.then((points) => {
+      console.log(points);
+    });
+  }
 
   get points() {
     return this.#points;
