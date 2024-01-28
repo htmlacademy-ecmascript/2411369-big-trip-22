@@ -56,4 +56,6 @@ render(newPointButtonComponent, tripElement);
 tripInfoPresenter.init();
 filterPresenter.init();
 boardPresenter.init();
-pointsModel.init();
+pointsModel.init().finally(() => {
+  render(newPointButtonComponent, tripElement);
+});
