@@ -3,6 +3,7 @@ import PointListView from '../view/point-list-view.js';
 import PointListMessageView from '../view/point-list-empty-message-view.js';
 import SortView from '../view/sort-view.js';
 import NewPointPresenter from './new-point-presenter.js';
+import LoadingView from '../view/loading-view.js';
 import { remove, render } from '../framework/render.js';
 import { FilterType, SortType, UpdateType, UserAction } from '../const.js';
 import { sortByDay, sortByTime, sortByPrice } from '../utils/point.js';
@@ -14,12 +15,14 @@ export default class BoardPresenter {
   #filterModel = null;
 
   #listComponent = new PointListView();
+  #loadingComponent = new LoadingView();
   #sortComponent = null;
   #listMessageComponent = null;
 
   #pointPresenter = new Map();
   #newPointPresenter = null;
   #currentSortType = SortType.DAY;
+  #isLoading = true;
 
   constructor({ listContainer, pointsModel, filterModel, onNewPointDestroy }) {
     this.#listContainer = listContainer;
@@ -65,8 +68,8 @@ export default class BoardPresenter {
 
   #renderPoint(point) {
     const pointPresenter = new PointPresenter({
-      offersByTypeModel: this.#pointsModel.offers,
-      destinationsModel: this.#pointsModel.destinations,
+      offers: this.#pointsModel.offers,
+      destinations: this.#pointsModel.destinations,
       pointListContainer: this.#listComponent.element,
       onDataChange: this.#handleViewAction,
       onModeChange: this.#handleModeChange
@@ -103,6 +106,11 @@ export default class BoardPresenter {
         this.#clearBoard({ resetSortType: true });
         this.#renderBoard();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderBoard();
+        break;
     }
   };
 
@@ -136,12 +144,17 @@ export default class BoardPresenter {
     render(this.#listMessageComponent, this.#listComponent.element);
   }
 
+  #renderLoadingMessage() {
+    render(this.#loadingComponent, this.#listComponent.element);
+  }
+
   #clearBoard({ resetSortType = false } = {}) {
     this.#newPointPresenter.destroy();
     this.#pointPresenter.forEach((presenter) => presenter.destroy());
     this.#pointPresenter.clear();
 
     remove(this.#sortComponent);
+    remove(this.#loadingComponent);
     remove(this.#listMessageComponent);
 
     if (resetSortType) {
@@ -150,9 +163,15 @@ export default class BoardPresenter {
   }
 
   #renderBoard() {
+    render(this.#listComponent, this.#listContainer);
+
+    if (this.#isLoading) {
+      this.#renderLoadingMessage();
+      return;
+    }
+
     this.#renderSort();
 
-    render(this.#listComponent, this.#listContainer);
     const points = this.points;
 
     if (points.length) {

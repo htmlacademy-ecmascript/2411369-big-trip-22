@@ -7,8 +7,8 @@ import FilterPresenter from './presenter/filter-presenter.js';
 import PointsApiService from './points-api-service.js';
 import { render } from './framework/render.js';
 
-const AUTHORIZATION = 'Basic gJ39ArvNy7EAu2';
-const END_POINT = 'https://21.objects.pages.academy/big-trip';
+const AUTHORIZATION = 'Basic 767LoHVNbXvdsg';
+const END_POINT = 'https://21.objects.htmlacademy.pro/big-trip';
 
 const tripElement = document.querySelector('.trip-main');
 const tripInfoElement = tripElement.querySelector('.trip-controls__filters');
