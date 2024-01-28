@@ -2,11 +2,10 @@ import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import { POINT_TYPES } from '../const.js';
 import { ucFirst } from '../utils/common.js';
 
 const DATE_FORMAT = 'DD/MM/YY HH:mm';
-const DEFAULT_TYPE = POINT_TYPES[0];
+const DEFAULT_TYPE = 'taxi';
 
 const DefaultPointData = {
   DATE_FROM: dayjs().toISOString(),
@@ -68,10 +67,10 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
 
   const destinationNameTemplate = destinations.map((element) => `<option value="${element.name}"></option>`).join('');
 
-  const eventTypeTemplate = POINT_TYPES.map((pointType) => `
+  const eventTypeTemplate = offersByType.map((offer) => `
     <div class="event__type-item">
-      <input id="event-type-${pointType}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${pointType}" ${pointType === type ? 'checked' : ''}>
-      <label class="event__type-label  event__type-label--${pointType}" for="event-type-${pointType}-1">${ucFirst(pointType)}</label>
+      <input id="event-type-${offer.type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${offer.type}" ${offer.type === type ? 'checked' : ''}>
+      <label class="event__type-label  event__type-label--${offer.type}" for="event-type-${offer.type}-1">${ucFirst(offer.type)}</label>
     </div>`
   ).join('');
 
