@@ -29,7 +29,7 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
   const isSubmitDisabled = destination && basePrice;
   const submitBtnText = isSaving ? 'Saving...' : 'Save';
   const deleteBtnText = isDeleting ? 'Deleting...' : 'Delete';
-  const resetBtnText = isDisabled ? 'Cancel' : deleteBtnText;
+  const resetBtnText = isNewPoint ? 'Cancel' : deleteBtnText;
 
   const pointTypeOffer = offersByType.find((offer) => offer.type === type);
   const pointDestination = destinations.find((appointment) => destination === appointment.id);
