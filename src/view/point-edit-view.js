@@ -23,10 +23,13 @@ const BLANK_POINT = {
 };
 
 const createPointEditTemplate = (point, offersByType, destinations) => {
-  const { type, dateFrom, dateTo, basePrice, destination, offers } = point;
+  const { type, dateFrom, dateTo, basePrice, destination, offers, isDisabled, isSaving, isDeleting } = point;
 
   const isNewPoint = !point.id;
-  const isValidForm = destination && basePrice;
+  const isSubmitDisabled = destination && basePrice;
+  const submitBtnText = isSaving ? 'Saving...' : 'Save';
+  const deleteBtnText = isDeleting ? 'Deleting...' : 'Delete';
+  const resetBtnText = isDisabled ? 'Cancel' : deleteBtnText;
 
   const pointTypeOffer = offersByType.find((offer) => offer.type === type);
   const pointDestination = destinations.find((appointment) => destination === appointment.id);
@@ -76,6 +79,8 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
   const parsDateTo = dayjs(dateTo);
   const parsDateFrom = dayjs(dateFrom);
 
+  const createRollupBtn = () => isNewPoint ? '' : '<button class="event__rollup-btn" type="button"><span class="visually-hidden">Open event</span></button>';
+
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
       <header class="event__header">
@@ -120,11 +125,9 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
           <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value=${point.basePrice ? basePrice : 0} required>
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit" ${isValidForm ? '' : 'disabled'}>Save</button>
-        <button class="event__reset-btn" type="reset">${isNewPoint ? 'Cancel' : 'Delete'}</button>
-        ${isNewPoint ? '' : `<button class="event__rollup-btn" type="button">
-          <span class="visually-hidden">Open event</span>
-        </button>`}
+        <button class="event__save-btn  btn  btn--blue" type="submit" ${isSubmitDisabled || isDisabled ? '' : 'disabled'}>${submitBtnText}</button>
+        <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${resetBtnText}</button>
+        ${createRollupBtn()}
       </header>
       <section class="event__details">
         ${offersTemplate}
@@ -159,7 +162,6 @@ export default class PointEditView extends AbstractStatefulView {
   }
 
   get template() {
-    // console.log('this._state:', this._state);
     return createPointEditTemplate(this._state, this.#offersByType, this.#destinations);
   }
 
@@ -177,9 +179,22 @@ export default class PointEditView extends AbstractStatefulView {
     }
   }
 
-  static parsePointToState = (point) => ({ ...point });
+  static parsePointToState = (point) => ({
+    ...point,
+    isDisabled: false,
+    isSaving: false,
+    isDeleting: false
+  });
 
-  static parseStateToPoint = (state) => ({ ...state });
+  static parseStateToPoint = (state) => {
+    const point = { ...state };
+
+    delete point.isDisabled;
+    delete point.isSaving;
+    delete point.isDeleting;
+
+    return point;
+  };
 
   reset(point) {
     this.updateElement(PointEditView.parsePointToState(point));
@@ -262,7 +277,6 @@ export default class PointEditView extends AbstractStatefulView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    console.log('this._state:', this._state);
     this.#handleFormSubmit(PointEditView.parseStateToPoint(this._state));
   };
 
