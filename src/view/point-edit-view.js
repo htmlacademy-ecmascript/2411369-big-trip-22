@@ -13,7 +13,6 @@ const DefaultPointData = {
 };
 
 const BLANK_POINT = {
-  id: '',
   basePrice: '',
   dateFrom: DefaultPointData.DATE_FROM,
   dateTo: DefaultPointData.DATE_TO,
@@ -160,6 +159,7 @@ export default class PointEditView extends AbstractStatefulView {
   }
 
   get template() {
+    // console.log('this._state:', this._state);
     return createPointEditTemplate(this._state, this.#offersByType, this.#destinations);
   }
 
@@ -262,6 +262,7 @@ export default class PointEditView extends AbstractStatefulView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
+    console.log('this._state:', this._state);
     this.#handleFormSubmit(PointEditView.parseStateToPoint(this._state));
   };
 
