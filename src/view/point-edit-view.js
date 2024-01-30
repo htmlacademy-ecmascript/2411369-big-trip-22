@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import { ucFirst } from '../utils/common.js';
+import { ucFirst, validatePriceField } from '../utils/common.js';
 
 const DATE_FORMAT = 'DD/MM/YY HH:mm';
 const DEFAULT_TYPE = 'taxi';
@@ -249,7 +249,7 @@ export default class PointEditView extends AbstractStatefulView {
     evt.preventDefault();
 
     this.updateElement({
-      basePrice: evt.target.value
+      basePrice: validatePriceField(evt.target.value)
     });
   };
 
