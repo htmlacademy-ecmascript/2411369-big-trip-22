@@ -206,9 +206,9 @@ export default class PointEditView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group')
       .addEventListener('change', this.#eventTypeToggleHandler);
     this.element.querySelector('.event__input--destination')
-      .addEventListener('change', this.#eventDestinationToggleHandler);
-    this.element.querySelector('.event__input--price')
-      .addEventListener('change', this.#priceInputHandler);
+      .addEventListener('input', this.#eventDestinationToggleHandler);
+    this.element.querySelector('.event__field-group--price')
+      .addEventListener('input', this.#priceInputHandler);
     this.element.querySelectorAll('.event__offer-selector input')
       .forEach((offer) => offer.addEventListener('change', this.#offersChangeHandler));
     this.element.querySelector('.event__reset-btn')
@@ -260,14 +260,13 @@ export default class PointEditView extends AbstractStatefulView {
 
   #offersChangeHandler = (evt) => {
     evt.preventDefault();
-    evt.target.toggleAttribute('checked');
 
     let selectedOffers = this._state.offers;
 
-    if (evt.target.hasAttribute('checked')) {
-      selectedOffers.push(+(evt.target.dataset.offerId));
+    if (evt.target.checked) {
+      selectedOffers.push(evt.target.dataset.offerId);
     } else {
-      selectedOffers = selectedOffers.filter((id) => id !== +(evt.target.dataset.offerId));
+      selectedOffers = selectedOffers.filter((id) => id !== evt.target.dataset.offerId);
     }
 
     this._setState({
@@ -328,3 +327,4 @@ export default class PointEditView extends AbstractStatefulView {
     );
   }
 }
+
