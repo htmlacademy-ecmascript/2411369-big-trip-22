@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import { ucFirst } from '../utils/common.js';
+import { ucFirst, validatePriceField } from '../utils/common.js';
 
 const DATE_FORMAT = 'DD/MM/YY HH:mm';
 const DEFAULT_TYPE = 'taxi';
@@ -13,7 +13,6 @@ const DefaultPointData = {
 };
 
 const BLANK_POINT = {
-  id: '',
   basePrice: '',
   dateFrom: DefaultPointData.DATE_FROM,
   dateTo: DefaultPointData.DATE_TO,
@@ -24,10 +23,13 @@ const BLANK_POINT = {
 };
 
 const createPointEditTemplate = (point, offersByType, destinations) => {
-  const { type, dateFrom, dateTo, basePrice, destination, offers } = point;
+  const { type, dateFrom, dateTo, basePrice, destination, offers, isDisabled, isSaving, isDeleting } = point;
 
   const isNewPoint = !point.id;
-  const isValidForm = destination && basePrice;
+  const isSubmitDisabled = destination && basePrice;
+  const submitBtnText = isSaving ? 'Saving...' : 'Save';
+  const deleteBtnText = isDeleting ? 'Deleting...' : 'Delete';
+  const resetBtnText = isNewPoint ? 'Cancel' : deleteBtnText;
 
   const pointTypeOffer = offersByType.find((offer) => offer.type === type);
   const pointDestination = destinations.find((appointment) => destination === appointment.id);
@@ -77,6 +79,8 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
   const parsDateTo = dayjs(dateTo);
   const parsDateFrom = dayjs(dateFrom);
 
+  const createRollupBtn = () => isNewPoint ? '' : '<button class="event__rollup-btn" type="button"><span class="visually-hidden">Open event</span></button>';
+
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
       <header class="event__header">
@@ -121,11 +125,9 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
           <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value=${point.basePrice ? basePrice : 0} required>
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit" ${isValidForm ? '' : 'disabled'}>Save</button>
-        <button class="event__reset-btn" type="reset">${isNewPoint ? 'Cancel' : 'Delete'}</button>
-        ${isNewPoint ? '' : `<button class="event__rollup-btn" type="button">
-          <span class="visually-hidden">Open event</span>
-        </button>`}
+        <button class="event__save-btn  btn  btn--blue" type="submit" ${isSubmitDisabled || isDisabled ? '' : 'disabled'}>${submitBtnText}</button>
+        <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${resetBtnText}</button>
+        ${createRollupBtn()}
       </header>
       <section class="event__details">
         ${offersTemplate}
@@ -177,9 +179,22 @@ export default class PointEditView extends AbstractStatefulView {
     }
   }
 
-  static parsePointToState = (point) => ({ ...point });
+  static parsePointToState = (point) => ({
+    ...point,
+    isDisabled: false,
+    isSaving: false,
+    isDeleting: false
+  });
 
-  static parseStateToPoint = (state) => ({ ...state });
+  static parseStateToPoint = (state) => {
+    const point = { ...state };
+
+    delete point.isDisabled;
+    delete point.isSaving;
+    delete point.isDeleting;
+
+    return point;
+  };
 
   reset(point) {
     this.updateElement(PointEditView.parsePointToState(point));
@@ -191,9 +206,9 @@ export default class PointEditView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group')
       .addEventListener('change', this.#eventTypeToggleHandler);
     this.element.querySelector('.event__input--destination')
-      .addEventListener('change', this.#eventDestinationToggleHandler);
-    this.element.querySelector('.event__input--price')
-      .addEventListener('change', this.#priceInputHandler);
+      .addEventListener('input', this.#eventDestinationToggleHandler);
+    this.element.querySelector('.event__field-group--price')
+      .addEventListener('input', this.#priceInputHandler);
     this.element.querySelectorAll('.event__offer-selector input')
       .forEach((offer) => offer.addEventListener('change', this.#offersChangeHandler));
     this.element.querySelector('.event__reset-btn')
@@ -234,7 +249,7 @@ export default class PointEditView extends AbstractStatefulView {
     evt.preventDefault();
 
     this.updateElement({
-      basePrice: evt.target.value
+      basePrice: validatePriceField(evt.target.value)
     });
   };
 
@@ -245,14 +260,13 @@ export default class PointEditView extends AbstractStatefulView {
 
   #offersChangeHandler = (evt) => {
     evt.preventDefault();
-    evt.target.toggleAttribute('checked');
 
     let selectedOffers = this._state.offers;
 
-    if (evt.target.hasAttribute('checked')) {
-      selectedOffers.push(+(evt.target.dataset.offerId));
+    if (evt.target.checked) {
+      selectedOffers.push(evt.target.dataset.offerId);
     } else {
-      selectedOffers = selectedOffers.filter((id) => id !== +(evt.target.dataset.offerId));
+      selectedOffers = selectedOffers.filter((id) => id !== evt.target.dataset.offerId);
     }
 
     this._setState({
@@ -313,3 +327,4 @@ export default class PointEditView extends AbstractStatefulView {
     );
   }
 }
+

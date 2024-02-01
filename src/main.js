@@ -52,11 +52,14 @@ function handleNewPointButtonClose() {
 }
 
 render(newPointButtonComponent, tripElement);
+newPointButtonComponent.element.disabled = true;
 
 tripInfoPresenter.init();
 filterPresenter.init();
 boardPresenter.init();
 pointsModel.init()
   .finally(() => {
-    render(newPointButtonComponent, tripElement);
+    if (pointsModel.points.length) {
+      newPointButtonComponent.element.disabled = false;
+    }
   });

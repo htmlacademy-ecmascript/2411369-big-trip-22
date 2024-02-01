@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid';
 import Observable from '../framework/observable.js';
 import { UpdateType } from '../const.js';
 
@@ -68,29 +67,42 @@ export default class PointsModel extends Observable {
     }
   }
 
-  addPoint(updatedType, update) {
-    update.id = nanoid();
-    this.#points = [
-      update,
-      ...this.#points
-    ];
+  async addPoint(updatedType, update) {
+    try {
+      const response = await this.#pointsApiService.addPoint(update);
+      const newPoint = this.#adaptToClient(response);
 
-    this._notify(updatedType, update);
+      this.#points = [
+        newPoint,
+        ...this.#points
+      ];
+
+      this._notify(updatedType, newPoint);
+    } catch(err) {
+      throw new Error('Can\'t add point');
+    }
+
   }
 
-  deletePoint(updateType, update) {
+  async deletePoint(updateType, update) {
     const index = this.#points.findIndex((point) => point.id === update.id);
 
     if (!~index) {
       throw new Error('Can\'t update unexisting point');
     }
 
-    this.#points = [
-      ...this.#points.slice(0, index),
-      ...this.#points.slice(index + 1)
-    ];
+    try {
+      await this.#pointsApiService.deletePoint(update);
 
-    this._notify(updateType);
+      this.#points = [
+        ...this.#points.slice(0, index),
+        ...this.#points.slice(index + 1)
+      ];
+
+      this._notify(updateType);
+    } catch(err) {
+      throw new Error('Can\'t delete point');
+    }
   }
 
   #adaptToClient(point) {
