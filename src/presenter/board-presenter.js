@@ -105,7 +105,7 @@ export default class BoardPresenter {
         try {
           await this.#pointsModel.addPoint(updateType, update);
         } catch(err) {
-          this.#pointPresenter.setAborting();
+          this.#newPointPresenter.setAborting();
         }
         break;
       case UserAction.DELETE_POINT:
@@ -176,20 +176,6 @@ export default class BoardPresenter {
     render(this.#loadingComponent, this.#listComponent.element);
   }
 
-  #clearBoard({ resetSortType = false } = {}) {
-    this.#newPointPresenter.destroy();
-    this.#pointPresenter.forEach((presenter) => presenter.destroy());
-    this.#pointPresenter.clear();
-
-    remove(this.#sortComponent);
-    remove(this.#loadingComponent);
-    remove(this.#listMessageComponent);
-
-    if (resetSortType) {
-      this.#currentSortType = SortType.DAY;
-    }
-  }
-
   #renderBoard() {
     render(this.#listComponent, this.#listContainer);
 
@@ -210,6 +196,20 @@ export default class BoardPresenter {
       }
     } else {
       this.#renderListMessage();
+    }
+  }
+
+  #clearBoard({ resetSortType = false } = {}) {
+    this.#newPointPresenter.destroy();
+    this.#pointPresenter.forEach((presenter) => presenter.destroy());
+    this.#pointPresenter.clear();
+
+    remove(this.#sortComponent);
+    remove(this.#loadingComponent);
+    remove(this.#listMessageComponent);
+
+    if (resetSortType) {
+      this.#currentSortType = SortType.DAY;
     }
   }
 }

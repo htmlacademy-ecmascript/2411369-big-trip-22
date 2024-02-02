@@ -26,13 +26,27 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
   const { type, dateFrom, dateTo, basePrice, destination, offers, isDisabled, isSaving, isDeleting } = point;
 
   const isNewPoint = !point.id;
-  const isSubmitDisabled = destination && basePrice;
+  const isSubmitDisabled = isSaving;
   const submitBtnText = isSaving ? 'Saving...' : 'Save';
   const deleteBtnText = isDeleting ? 'Deleting...' : 'Delete';
   const resetBtnText = isNewPoint ? 'Cancel' : deleteBtnText;
 
   const pointTypeOffer = offersByType.find((offer) => offer.type === type);
   const pointDestination = destinations.find((appointment) => destination === appointment.id);
+
+  const parsDateTo = dayjs(dateTo);
+  const parsDateFrom = dayjs(dateFrom);
+
+  const eventTypeTemplate = offersByType.map((offer) => `
+    <div class="event__type-item">
+      <input id="event-type-${offer.type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${offer.type}" ${offer.type === type ? 'checked' : ''}>
+      <label class="event__type-label  event__type-label--${offer.type}" for="event-type-${offer.type}-1">${ucFirst(offer.type)}</label>
+    </div>`
+  ).join('');
+
+  const destinationNameTemplate = destinations.map((element) => `<option value="${element.name}"></option>`).join('');
+
+  const createRollupBtn = () => isNewPoint ? '' : '<button class="event__rollup-btn" type="button"><span class="visually-hidden">Open event</span></button>';
 
   let offersTemplate = '';
   if (pointTypeOffer) {
@@ -66,20 +80,6 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
         </div>
       </section>`;
   }
-
-  const destinationNameTemplate = destinations.map((element) => `<option value="${element.name}"></option>`).join('');
-
-  const eventTypeTemplate = offersByType.map((offer) => `
-    <div class="event__type-item">
-      <input id="event-type-${offer.type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${offer.type}" ${offer.type === type ? 'checked' : ''}>
-      <label class="event__type-label  event__type-label--${offer.type}" for="event-type-${offer.type}-1">${ucFirst(offer.type)}</label>
-    </div>`
-  ).join('');
-
-  const parsDateTo = dayjs(dateTo);
-  const parsDateFrom = dayjs(dateFrom);
-
-  const createRollupBtn = () => isNewPoint ? '' : '<button class="event__rollup-btn" type="button"><span class="visually-hidden">Open event</span></button>';
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -125,7 +125,7 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
           <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value=${point.basePrice ? basePrice : 0} required>
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit" ${isSubmitDisabled || isDisabled ? '' : 'disabled'}>${submitBtnText}</button>
+        <button class="event__save-btn  btn  btn--blue" type="submit" ${isSubmitDisabled || isDisabled ? 'disabled' : ''}>${submitBtnText}</button>
         <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${resetBtnText}</button>
         ${createRollupBtn()}
       </header>
@@ -197,7 +197,7 @@ export default class PointEditView extends AbstractStatefulView {
   };
 
   reset(point) {
-    this.updateElement(PointEditView.parsePointToState(point));
+    this.updateElement(point);
   }
 
   _restoreHandlers() {
@@ -225,7 +225,7 @@ export default class PointEditView extends AbstractStatefulView {
   #eventTypeToggleHandler = (evt) => {
     evt.preventDefault();
 
-    this.updateElement({
+    this._setState({
       type: evt.target.value,
       offers: []
     });
@@ -248,14 +248,9 @@ export default class PointEditView extends AbstractStatefulView {
   #priceInputHandler = (evt) => {
     evt.preventDefault();
 
-    this.updateElement({
+    this._setState({
       basePrice: validatePriceField(evt.target.value)
     });
-  };
-
-  #rollupButtonClickHandler = (evt) => {
-    evt.preventDefault();
-    this.#handleRollupButtonClick();
   };
 
   #offersChangeHandler = (evt) => {
@@ -272,6 +267,11 @@ export default class PointEditView extends AbstractStatefulView {
     this._setState({
       offers: selectedOffers
     });
+  };
+
+  #rollupButtonClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleRollupButtonClick();
   };
 
   #formSubmitHandler = (evt) => {
@@ -311,7 +311,7 @@ export default class PointEditView extends AbstractStatefulView {
       {
         ...commonConfig,
         defaultDate: this._state.dateFrom,
-        onClose: this.#dateFromChangeHandler,
+        onChange: this.#dateFromChangeHandler,
         maxDate: this._state.dateTo
       }
     );
@@ -321,7 +321,7 @@ export default class PointEditView extends AbstractStatefulView {
       {
         ...commonConfig,
         defaultDate: this._state.dateTo,
-        onClose: this.#dateToChangeHandler,
+        onChange: this.#dateToChangeHandler,
         minDate: this._state.dateFrom
       }
     );

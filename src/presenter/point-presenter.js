@@ -2,12 +2,7 @@ import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
 import { remove, render, replace } from '../framework/render.js';
 import { isEscapeKey } from '../utils/point.js';
-import { UpdateType, UserAction } from '../const.js';
-
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING'
-};
+import { UpdateType, UserAction, Mode } from '../const.js';
 
 export default class PointPresenter {
   #offers = null;
