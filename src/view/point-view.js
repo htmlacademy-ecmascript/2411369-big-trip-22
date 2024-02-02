@@ -15,6 +15,9 @@ const createPointTemplate = (point, offersByType, destinations) => {
   const pointTypeOffer = offersByType.find((offer) => offer.type === type);
   const pointDestination = destinations.find((appointment) => destination === appointment.id);
 
+  const parsDateTo = dayjs(dateTo);
+  const parsDateFrom = dayjs(dateFrom);
+
   let offersTemplate = '';
   if (pointTypeOffer) {
     offersTemplate = pointTypeOffer.offers
@@ -25,9 +28,6 @@ const createPointTemplate = (point, offersByType, destinations) => {
             <span class="event__offer-price">${offer.price}</span>
           </li>`).join('');
   }
-
-  const parsDateTo = dayjs(dateTo);
-  const parsDateFrom = dayjs(dateFrom);
 
   const getEventDuration = (from, to) => {
     const eventDuration = to.diff(from);

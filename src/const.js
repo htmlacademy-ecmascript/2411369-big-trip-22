@@ -24,4 +24,9 @@ const UpdateType = {
   INIT: 'INIT'
 };
 
-export { FilterType, SortType, UserAction, UpdateType };
+const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING'
+};
+
+export { FilterType, SortType, UserAction, UpdateType, Mode };
