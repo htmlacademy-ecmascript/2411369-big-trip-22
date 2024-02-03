@@ -4,6 +4,7 @@ import PointListMessageView from '../view/point-list-empty-message-view.js';
 import SortView from '../view/sort-view.js';
 import NewPointPresenter from './new-point-presenter.js';
 import LoadingView from '../view/loading-view.js';
+import ErrorView from '../view/error-message-view.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import { remove, render } from '../framework/render.js';
 import { FilterType, SortType, UpdateType, UserAction } from '../const.js';
@@ -22,6 +23,7 @@ export default class BoardPresenter {
 
   #listComponent = new PointListView();
   #loadingComponent = new LoadingView();
+  #errorComponent = new ErrorView();
   #sortComponent = null;
   #listMessageComponent = null;
 
@@ -73,6 +75,14 @@ export default class BoardPresenter {
     this.#currentSortType = SortType.DAY;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
     this.#newPointPresenter.init();
+  }
+
+  hideListMessage() {
+    remove(this.#listMessageComponent);
+  }
+
+  showListMessage() {
+    this.#renderListMessage();
   }
 
   #renderPoint(point) {
@@ -176,6 +186,10 @@ export default class BoardPresenter {
     render(this.#loadingComponent, this.#listComponent.element);
   }
 
+  #renderErrorMessage() {
+    render(this.#errorComponent, this.#listComponent.element);
+  }
+
   #renderBoard() {
     render(this.#listComponent, this.#listContainer);
 
@@ -184,12 +198,16 @@ export default class BoardPresenter {
       return;
     }
 
-    this.#renderSort();
-
     const points = this.points;
+
+    if (!points.length && !this.#pointsModel.offers.length && !this.#pointsModel.destinations.length) {
+      this.#renderErrorMessage();
+      return;
+    }
 
     if (points.length) {
       remove(this.#listMessageComponent);
+      this.#renderSort();
 
       for (let i = 0; i < points.length; i++) {
         this.#renderPoint(points[i]);

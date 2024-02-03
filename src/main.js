@@ -7,8 +7,8 @@ import FilterPresenter from './presenter/filter-presenter.js';
 import PointsApiService from './points-api-service.js';
 import { render } from './framework/render.js';
 
-const AUTHORIZATION = 'Basic 767LoHVNbXvdsg';
-const END_POINT = 'https://21.objects.htmlacademy.pro/big-trip';
+const AUTHORIZATION = 'Basic 767LoHVNbXvdsg3d4hg';
+const END_POINT = 'https://22.objects.htmlacademy.pro/big-trip';
 
 const tripElement = document.querySelector('.trip-main');
 const tripInfoElement = tripElement.querySelector('.trip-controls__filters');
@@ -44,11 +44,13 @@ const tripInfoPresenter = new TripInfoPresenter({
 
 function handleNewPointButtonClick() {
   boardPresenter.createPoint();
+  boardPresenter.hideListMessage();
   newPointButtonComponent.element.disabled = true;
 }
 
 function handleNewPointButtonClose() {
   newPointButtonComponent.element.disabled = false;
+  boardPresenter.showListMessage();
 }
 
 render(newPointButtonComponent, tripElement);
@@ -59,7 +61,9 @@ filterPresenter.init();
 boardPresenter.init();
 pointsModel.init()
   .finally(() => {
-    if (pointsModel.points.length) {
-      newPointButtonComponent.element.disabled = false;
+    newPointButtonComponent.element.disabled = false;
+
+    if (!pointsModel.offers.length && !pointsModel.destinations.length) {
+      newPointButtonComponent.element.disabled = true;
     }
   });
