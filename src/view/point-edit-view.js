@@ -1,21 +1,17 @@
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import he from 'he';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { ucFirst, validatePriceField } from '../utils/common.js';
 
 const DATE_FORMAT = 'DD/MM/YY HH:mm';
 const DEFAULT_TYPE = 'taxi';
 
-const DefaultPointData = {
-  DATE_FROM: dayjs().toISOString(),
-  DATE_TO: dayjs().add(30, 'minutes').toISOString()
-};
-
 const BLANK_POINT = {
   basePrice: '',
-  dateFrom: DefaultPointData.DATE_FROM,
-  dateTo: DefaultPointData.DATE_TO,
+  dateFrom: dayjs().toISOString(),
+  dateTo: dayjs().toISOString(),
   destination: '',
   isFavorite: false,
   offers: [],
@@ -26,7 +22,7 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
   const { type, dateFrom, dateTo, basePrice, destination, offers, isDisabled, isSaving, isDeleting } = point;
 
   const isNewPoint = !point.id;
-  const isSubmitDisabled = isSaving;
+  const isSubmitDisabled = destination && basePrice;
   const submitBtnText = isSaving ? 'Saving...' : 'Save';
   const deleteBtnText = isDeleting ? 'Deleting...' : 'Delete';
   const resetBtnText = isNewPoint ? 'Cancel' : deleteBtnText;
@@ -103,7 +99,7 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
           <label class="event__label  event__type-output" for="event-destination-1">
             ${type}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${pointDestination ? pointDestination.name : ''}" list="destination-list-1" required>
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${pointDestination ? he.encode(pointDestination.name) : ''}" list="destination-list-1" required>
           <datalist id="destination-list-1">
             ${destinationNameTemplate}
           </datalist>
@@ -125,7 +121,7 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
           <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value=${point.basePrice ? basePrice : 0} required>
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit" ${isSubmitDisabled || isDisabled ? 'disabled' : ''}>${submitBtnText}</button>
+        <button class="event__save-btn  btn  btn--blue" type="submit" ${isSubmitDisabled || isDisabled ? '' : 'disabled'}>${submitBtnText}</button>
         <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${resetBtnText}</button>
         ${createRollupBtn()}
       </header>
