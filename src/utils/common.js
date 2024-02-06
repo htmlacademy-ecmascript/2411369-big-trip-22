@@ -8,12 +8,12 @@ const validatePriceField = (value) => {
   return +value;
 };
 
-const ucFirst = (str) => {
-  if (!str) {
-    return str;
+const ucFirst = (string) => {
+  if (!string) {
+    return string;
   }
 
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
 export { ucFirst, validatePriceField };
