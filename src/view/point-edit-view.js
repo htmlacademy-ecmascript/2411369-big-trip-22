@@ -200,9 +200,9 @@ export default class PointEditView extends AbstractStatefulView {
     this.element.querySelector('form')
       .addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__type-group')
-      .addEventListener('change', this.#eventTypeToggleHandler);
+      .addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination')
-      .addEventListener('change', this.#eventDestinationToggleHandler);
+      .addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__field-group--price')
       .addEventListener('change', this.#priceInputHandler);
     this.element.querySelectorAll('.event__offer-selector input')
@@ -212,13 +212,13 @@ export default class PointEditView extends AbstractStatefulView {
 
     if (this._state.id) {
       this.element.querySelector('.event__rollup-btn')
-        .addEventListener('click', this.#rollupButtonClickHandler);
+        .addEventListener('click', this.#closeClickHandler);
     }
 
     this.#setDatepicker();
   }
 
-  #eventTypeToggleHandler = (evt) => {
+  #typeChangeHandler = (evt) => {
     evt.preventDefault();
 
     this.updateElement({
@@ -227,7 +227,7 @@ export default class PointEditView extends AbstractStatefulView {
     });
   };
 
-  #eventDestinationToggleHandler = (evt) => {
+  #destinationChangeHandler = (evt) => {
     evt.preventDefault();
 
     let selectedDestination = this.#destinations.find((destination) => evt.target.value === destination.name);
@@ -265,7 +265,7 @@ export default class PointEditView extends AbstractStatefulView {
     });
   };
 
-  #rollupButtonClickHandler = (evt) => {
+  #closeClickHandler = (evt) => {
     evt.preventDefault();
     this.#handleRollupButtonClick();
   };
