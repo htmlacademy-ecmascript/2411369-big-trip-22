@@ -1,10 +1,10 @@
 import PointPresenter from './point-presenter.js';
 import PointListView from '../view/point-list-view.js';
-import PointListMessageView from '../view/point-list-empty-message-view.js';
+import EmptyMessageView from '../view/empty-message-view.js';
 import SortView from '../view/sort-view.js';
 import NewPointPresenter from './new-point-presenter.js';
 import LoadingView from '../view/loading-view.js';
-import ErrorView from '../view/error-message-view.js';
+import ErrorView from '../view/error-view.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import { remove, render } from '../framework/render.js';
 import { FilterType, SortType, UpdateType, UserAction } from '../const.js';
@@ -177,7 +177,7 @@ export default class BoardPresenter {
   }
 
   #renderListMessage() {
-    this.#listMessageComponent = new PointListMessageView(this.#filterModel.filter);
+    this.#listMessageComponent = new EmptyMessageView(this.#filterModel.filter);
 
     render(this.#listMessageComponent, this.#listComponent.element);
   }

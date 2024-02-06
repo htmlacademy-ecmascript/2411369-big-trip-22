@@ -10,7 +10,7 @@ const messagesByFilter = {
 
 const createListMessageTemplate = (filterType) => `<p class="trip-events__msg">${messagesByFilter[filterType]}</p>`;
 
-export default class PointListMessageView extends AbstractView {
+export default class EmptyMessageView extends AbstractView {
   #filterType = null;
 
   constructor(filterType) {
