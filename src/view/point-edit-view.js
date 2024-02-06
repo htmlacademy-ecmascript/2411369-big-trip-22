@@ -202,9 +202,9 @@ export default class PointEditView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group')
       .addEventListener('change', this.#eventTypeToggleHandler);
     this.element.querySelector('.event__input--destination')
-      .addEventListener('input', this.#eventDestinationToggleHandler);
+      .addEventListener('change', this.#eventDestinationToggleHandler);
     this.element.querySelector('.event__field-group--price')
-      .addEventListener('input', this.#priceInputHandler);
+      .addEventListener('change', this.#priceInputHandler);
     this.element.querySelectorAll('.event__offer-selector input')
       .forEach((offer) => offer.addEventListener('change', this.#offersChangeHandler));
     this.element.querySelector('.event__reset-btn')
@@ -221,7 +221,7 @@ export default class PointEditView extends AbstractStatefulView {
   #eventTypeToggleHandler = (evt) => {
     evt.preventDefault();
 
-    this._setState({
+    this.updateElement({
       type: evt.target.value,
       offers: []
     });
@@ -244,7 +244,7 @@ export default class PointEditView extends AbstractStatefulView {
   #priceInputHandler = (evt) => {
     evt.preventDefault();
 
-    this._setState({
+    this.updateElement({
       basePrice: validatePriceField(evt.target.value)
     });
   };
