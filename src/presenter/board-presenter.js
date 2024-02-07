@@ -1,10 +1,10 @@
 import PointPresenter from './point-presenter.js';
 import PointListView from '../view/point-list-view.js';
-import PointListMessageView from '../view/point-list-empty-message-view.js';
+import EmptyMessageView from '../view/empty-message-view.js';
 import SortView from '../view/sort-view.js';
 import NewPointPresenter from './new-point-presenter.js';
 import LoadingView from '../view/loading-view.js';
-import ErrorView from '../view/error-message-view.js';
+import ErrorView from '../view/error-view.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import { remove, render } from '../framework/render.js';
 import { FilterType, SortType, UpdateType, UserAction } from '../const.js';
@@ -27,7 +27,7 @@ export default class BoardPresenter {
   #sortComponent = null;
   #listMessageComponent = null;
 
-  #pointPresenter = new Map();
+  #pointsPresenter = new Map();
   #newPointPresenter = null;
   #currentSortType = SortType.DAY;
   #isLoading = true;
@@ -95,7 +95,7 @@ export default class BoardPresenter {
     });
 
     pointPresenter.init(point);
-    this.#pointPresenter.set(point.id, pointPresenter);
+    this.#pointsPresenter.set(point.id, pointPresenter);
   }
 
   #handleViewAction = async (actionType, updateType, update) => {
@@ -103,11 +103,11 @@ export default class BoardPresenter {
 
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this.#pointPresenter.get(update.id).setSaving();
+        this.#pointsPresenter.get(update.id).setSaving();
         try {
           await this.#pointsModel.updatePoint(updateType, update);
         } catch(err) {
-          this.#pointPresenter.get(update.id).setAborting();
+          this.#pointsPresenter.get(update.id).setAborting();
         }
         break;
       case UserAction.ADD_POINT:
@@ -119,11 +119,11 @@ export default class BoardPresenter {
         }
         break;
       case UserAction.DELETE_POINT:
-        this.#pointPresenter.get(update.id).setDeleting();
+        this.#pointsPresenter.get(update.id).setDeleting();
         try {
           await this.#pointsModel.deletePoint(updateType, update);
         } catch(err) {
-          this.#pointPresenter.get(update.id).setAborting();
+          this.#pointsPresenter.get(update.id).setAborting();
         }
         break;
     }
@@ -134,7 +134,7 @@ export default class BoardPresenter {
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
-        this.#pointPresenter.get(data.id).init(data);
+        this.#pointsPresenter.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
         this.#clearBoard();
@@ -154,7 +154,7 @@ export default class BoardPresenter {
 
   #handleModeChange = () => {
     this.#newPointPresenter.destroy();
-    this.#pointPresenter.forEach((presenter) => presenter.resetView());
+    this.#pointsPresenter.forEach((presenter) => presenter.resetView());
   };
 
   #handleSortTypeChange = (sortType) => {
@@ -177,7 +177,7 @@ export default class BoardPresenter {
   }
 
   #renderListMessage() {
-    this.#listMessageComponent = new PointListMessageView(this.#filterModel.filter);
+    this.#listMessageComponent = new EmptyMessageView(this.#filterModel.filter);
 
     render(this.#listMessageComponent, this.#listComponent.element);
   }
@@ -219,8 +219,8 @@ export default class BoardPresenter {
 
   #clearBoard({ resetSortType = false } = {}) {
     this.#newPointPresenter.destroy();
-    this.#pointPresenter.forEach((presenter) => presenter.destroy());
-    this.#pointPresenter.clear();
+    this.#pointsPresenter.forEach((presenter) => presenter.destroy());
+    this.#pointsPresenter.clear();
 
     remove(this.#sortComponent);
     remove(this.#loadingComponent);

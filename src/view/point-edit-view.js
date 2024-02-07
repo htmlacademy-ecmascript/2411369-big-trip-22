@@ -10,8 +10,6 @@ const DEFAULT_TYPE = 'taxi';
 
 const BLANK_POINT = {
   basePrice: '',
-  dateFrom: dayjs().toISOString(),
-  dateTo: dayjs().toISOString(),
   destination: '',
   isFavorite: false,
   offers: [],
@@ -22,7 +20,7 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
   const { type, dateFrom, dateTo, basePrice, destination, offers, isDisabled, isSaving, isDeleting } = point;
 
   const isNewPoint = !point.id;
-  const isSubmitDisabled = destination && basePrice;
+  const isSubmitDisabled = destination && basePrice && dateFrom && dateTo;
   const submitBtnText = isSaving ? 'Saving...' : 'Save';
   const deleteBtnText = isDeleting ? 'Deleting...' : 'Delete';
   const resetBtnText = isNewPoint ? 'Cancel' : deleteBtnText;
@@ -107,10 +105,10 @@ const createPointEditTemplate = (point, offersByType, destinations) => {
 
         <div class="event__field-group  event__field-group--time">
           <label class="visually-hidden" for="event-start-time-1">From</label>
-          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${parsDateFrom.format(DATE_FORMAT)}">
+          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${isNewPoint ? '' : parsDateFrom.format(DATE_FORMAT)}">
           &mdash;
           <label class="visually-hidden" for="event-end-time-1">To</label>
-          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${parsDateTo.format(DATE_FORMAT)}">
+          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${isNewPoint ? '' : parsDateTo.format(DATE_FORMAT)}">
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -200,9 +198,9 @@ export default class PointEditView extends AbstractStatefulView {
     this.element.querySelector('form')
       .addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__type-group')
-      .addEventListener('change', this.#eventTypeToggleHandler);
+      .addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination')
-      .addEventListener('change', this.#eventDestinationToggleHandler);
+      .addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__field-group--price')
       .addEventListener('change', this.#priceInputHandler);
     this.element.querySelectorAll('.event__offer-selector input')
@@ -212,13 +210,13 @@ export default class PointEditView extends AbstractStatefulView {
 
     if (this._state.id) {
       this.element.querySelector('.event__rollup-btn')
-        .addEventListener('click', this.#rollupButtonClickHandler);
+        .addEventListener('click', this.#closeClickHandler);
     }
 
     this.#setDatepicker();
   }
 
-  #eventTypeToggleHandler = (evt) => {
+  #typeChangeHandler = (evt) => {
     evt.preventDefault();
 
     this.updateElement({
@@ -227,7 +225,7 @@ export default class PointEditView extends AbstractStatefulView {
     });
   };
 
-  #eventDestinationToggleHandler = (evt) => {
+  #destinationChangeHandler = (evt) => {
     evt.preventDefault();
 
     let selectedDestination = this.#destinations.find((destination) => evt.target.value === destination.name);
@@ -265,7 +263,7 @@ export default class PointEditView extends AbstractStatefulView {
     });
   };
 
-  #rollupButtonClickHandler = (evt) => {
+  #closeClickHandler = (evt) => {
     evt.preventDefault();
     this.#handleRollupButtonClick();
   };
