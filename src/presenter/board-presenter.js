@@ -154,7 +154,6 @@ export default class BoardPresenter {
 
   #handleModeChange = () => {
     this.#newPointPresenter.destroy();
-    // TODO нейминг массива во множественном числе
     this.#pointsPresenter.forEach((presenter) => presenter.resetView());
   };
 
@@ -220,7 +219,6 @@ export default class BoardPresenter {
 
   #clearBoard({ resetSortType = false } = {}) {
     this.#newPointPresenter.destroy();
-    // TODO нейминг массива во множественном числе
     this.#pointsPresenter.forEach((presenter) => presenter.destroy());
     this.#pointsPresenter.clear();
 
