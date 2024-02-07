@@ -1,7 +1,7 @@
 # Проект «Большое путешествие»
 
-* Студент: [Артур Аюпов](https://up.htmlacademy.ru/ecmascript/22/user/2411369).
-* Наставник: Сергей Рожков.
+- Студент: [Артур Аюпов](https://up.htmlacademy.ru/ecmascript/22/user/2411369).
+- Наставник: [Евгений Лепёшкин](https://htmlacademy.ru/profile/spearance).
 
 ---
 
